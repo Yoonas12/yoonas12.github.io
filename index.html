@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDOR Testing App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin-bottom: 20px; }
+        .response { border: 1px solid #ccc; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>IDOR Testing Application</h1>
+
+    <!-- Login Section -->
+    <div class="section">
+        <h2>Login</h2>
+        <input type="number" id="userId" placeholder="Enter User ID (1, 2, or 3)">
+        <button onclick="login()">Login</button>
+        <div id="loginResponse" class="response"></div>
+    </div>
+
+    <!-- Profile Access -->
+    <div class="section">
+        <h2>Access Profile</h2>
+        <input type="number" id="profileId" placeholder="Enter User ID">
+        <button onclick="getProfile()">Get Profile</button>
+        <div id="profileResponse" class="response"></div>
+    </div>
+
+    <!-- Document Access -->
+    <div class="section">
+        <h2>Access Document</h2>
+        <input type="text" id="docId" placeholder="Enter Document ID (e.g., doc1)">
+        <button onclick="getDocument()">Get Document</button>
+        <div id="docResponse" class="response"></div>
+    </div>
+
+    <!-- Project Files Access -->
+    <div class="section">
+        <h2>Access Project Files</h2>
+        <input type="number" id="projectId" placeholder="Enter Project ID">
+        <button onclick="getProjectFiles()">Get Files</button>
+        <div id="projectResponse" class="response"></div>
+    </div>
+
+    <!-- Admin Access -->
+    <div class="section">
+        <h2>Admin: List All Users</h2>
+        <button onclick="getAllUsers()">Get All Users</button>
+        <div id="adminResponse" class="response"></div>
+    </div>
+
+    <script>
+        async function login() {
+            const userId = document.getElementById('userId').value;
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: parseInt(userId) })
+            });
+            const data = await response.json();
+            document.getElementById('loginResponse').innerText = JSON.stringify(data, null, 2);
+        }
+
+        async function getProfile() {
+            const userId = document.getElementById('profileId').value;
+            const response = await fetch(`/profile/${userId}`);
+            const data = await response.json();
+            document.getElementById('profileResponse').innerText = JSON.stringify(data, null, 2);
+        }
+
+        async function getDocument() {
+            const docId = document.getElementById('docId').value;
+            const encodedDocId = btoa(docId).replace(/=/g, '').replace('+', '-').replace('/', '_'); // Base64 encode
+            const response = await fetch(`/document/${encodedDocId}`);
+            const data = await response.json();
+            document.getElementById('docResponse').innerText = JSON.stringify(data, null, 2);
+        }
+
+        async function getProjectFiles() {
+            const projectId = document.getElementById('projectId').value;
+            const response = await fetch(`/project/${projectId}/files`);
+            const data = await response.json();
+            document.getElementById('projectResponse').innerText = JSON.stringify(data, null, 2);
+        }
+
+        async function getAllUsers() {
+            const response = await fetch('/admin/users');
+            const data = await response.json();
+            document.getElementById('adminResponse').innerText = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>
